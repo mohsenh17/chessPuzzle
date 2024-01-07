@@ -91,3 +91,43 @@ def cropBoard(path2img):
 
 #cropBoard('pdf/page0Croped.jpg')
 
+def findBoard(path2img):
+    """
+    Detect and extract the chessboard and turn indicator from an image.
+
+    Parameters:
+    - path2img (str): The file path to the input image.
+
+    Returns:
+    Tuple: A tuple containing two lists of coordinates.
+        - The first list represents the bounding box of the detected chessboard.
+        - The second list represents the bounding box of the detected turn indicator.
+
+    This function reads an image using OpenCV, applies mean-shift filtering, converts it to grayscale,
+    and performs thresholding to extract contours. It then identifies rectangles in the contours
+    and sorts them based on height. The function returns the bounding box coordinates of the
+    largest rectangle (assumed to be the chessboard) and the last rectangle (assumed to be the turn indicator).
+
+    Example:
+    >>> chessboard, turn_indicator = findBoard('path/to/your/image.jpg')
+    """
+    image = cv2.imread(path2img)
+    blur = cv2.pyrMeanShiftFiltering(image, 11, 21)
+    gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
+    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+
+    cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    squars = []
+    for c in cnts:
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.015 * peri, True)
+        if len(approx) == 4:
+            x,y,w,h = cv2.boundingRect(approx)
+            squars.append([x,y,w,h])
+    squars.sort(key=lambda x:x[3], reverse=True)
+    chessBoard = squars[0]
+    turn_indicator = squars[-1]
+    return chessBoard, turn_indicator
+
+chessboard, turn_indicator = findBoard('pdf/page0puzzle0.jpg')
