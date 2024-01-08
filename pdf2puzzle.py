@@ -131,3 +131,19 @@ def findBoard(path2img):
     return chessBoard, turn_indicator
 
 chessboard, turn_indicator = findBoard('pdf/page0puzzle0.jpg')
+
+#chessboard, turn_indicator = findBoard('chessPieces/fullBoard.png')
+x,y,w,h = chessboard[0],chessboard[1],chessboard[2],chessboard[3]
+img = cv2.imread('pdf/page0puzzle0.jpg')
+#img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+#img = cv2.imread('chessPieces/fullBoard.png')
+chessboardMatrix =[]
+for col in range(8):
+    for row in range(8):
+        hStart = y+int(col*h/8)
+        hEnd = y+int((col+1)*h/8)
+        
+        wStart = x+int(row*w/8)
+        wEnd = x+int((row+1)*w/8)
+        chessboardMatrix.append(img[hStart:hEnd, wStart:wEnd])
