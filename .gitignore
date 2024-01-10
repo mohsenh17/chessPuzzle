@@ -2,3 +2,4 @@ chessPieces/
 pdf/
 dataset/
 image2board.py
+__pycache__/*
