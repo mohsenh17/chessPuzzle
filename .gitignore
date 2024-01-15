@@ -4,3 +4,4 @@ dataset/
 image2board.py
 __pycache__/*
 tmp.py
+pdf2puzzle.py
