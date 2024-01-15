@@ -9,7 +9,25 @@ from keras.callbacks import ModelCheckpoint
 from chess_game import *
 
 class ChessPieceClassifier:
+    """
+    A class for chess piece classification using a convolutional neural network.
+
+    Attributes:
+    - pieces2OneHotDict (dict): Dictionary mapping piece names to one-hot encoded representations.
+    - embd2pieces (list): List of piece names corresponding to the one-hot encoded representations.
+    - X_train, X_val, X_test (list): Lists to store the image data for training, validation, and testing.
+    - y_train, y_val, y_test (list): Lists to store the one-hot encoded labels for training, validation, and testing.
+    - model (Sequential): Keras Sequential model for the CNN.
+
+    Example:
+    >>> chess_classifier = ChessPieceClassifier()
+    >>> chess_classifier.detect(load_img('chessPieces/BBB.jpg', target_size=(32,32), color_mode="grayscale"))
+    >>> chess_classifier.detect(load_img('chessPieces/WRW.jpg', target_size=(32,32), color_mode="grayscale"))
+    """
     def __init__(self):
+        """
+        Initialize the ChessPieceClassifier instance with predefined dictionaries and lists.
+        """
         self.pieces2OneHotDict = {
             'black_bishop': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
             'black_king':[0,0,0,0,0,0,0,0,0,0,0,0,1,0],
@@ -45,6 +63,12 @@ class ChessPieceClassifier:
         self.model = None
 
     def load_images(self, directory):
+        """
+        Load images from the specified directory for training, validation, and testing.
+
+        Parameters:
+        - directory (str): The directory containing subdirectories for each chess piece.
+        """
         for piece in self.pieces2OneHotDict.keys():
             portion = 0
             for item in glob.glob('dataset/{}/{}/*'.format(directory, piece)):
@@ -63,8 +87,11 @@ class ChessPieceClassifier:
                 else:
                     self.X_test.append(img_to_array(img))
                     self.y_test.append(self.pieces2OneHotDict[piece])
-        print(len(self.X_train),len(self.X_val),len(self.X_test))
+
     def train(self):
+        """
+        Train the convolutional neural network using the loaded images and labels.
+        """
         self.load_images('black_square')
         self.load_images('white_square')
 
@@ -79,7 +106,14 @@ class ChessPieceClassifier:
         self.model.fit(np.array(self.X_train), np.array(self.y_train),
                        validation_data=(np.array(self.X_val), np.array(self.y_val)),
                        callbacks=[mc], shuffle=True, epochs=8)
+    
     def detect(self, pieceImg):
+        """
+        Detect the chess piece in the provided image using the trained model.
+
+        Parameters:
+        - pieceImg: A PIL Image object representing the chess piece image.
+        """
         loaded_model = keras.saving.load_model("models/CNN2piece")
         test = img_to_array(pieceImg).reshape(1, 32, 32, 1)
         pred = loaded_model.predict(test)[0]
@@ -90,7 +124,8 @@ class ChessPieceClassifier:
             predPiece = self.embd2pieces[13-np.argmax(pred)]
         print(predPiece)
 
-# Create an instance of the class and process images
-chess_classifier = ChessPieceClassifier()
-chess_classifier.detect(load_img('chessPieces/BBB.jpg', target_size=(32,32), color_mode="grayscale"))
-chess_classifier.detect(load_img('chessPieces/WRW.jpg', target_size=(32,32), color_mode="grayscale"))
+
+if __name__ == "__main__":
+    chess_classifier = ChessPieceClassifier()
+    chess_classifier.detect(load_img('chessPieces/BBB.jpg', target_size=(32,32), color_mode="grayscale"))
+    chess_classifier.detect(load_img('chessPieces/WRW.jpg', target_size=(32,32), color_mode="grayscale"))
